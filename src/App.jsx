@@ -2,18 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import Header from "./header";
-import Calendar from "./calendar";
+import Calendar, { CALENDAR_IDS, DANCE_CALENDAR_ID } from "./calendar";
 import Filter from "./filter";
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, onSnapshot, doc, getDoc, getDocs } from 'firebase/firestore';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_CALENDAR_API_KEY;
-
-const CALENDAR_IDS = [
-  'en.usa#holiday@group.v.calendar.google.com', // US holidays
-  'dee75596aea9533d01629c0cfc3c9561723c5d0db26e671aa7370189f83e9aea@group.calendar.google.com' // My new calendar made
-];
-const MY_CALENDAR_ID = 'dee75596aea9533d01629c0cfc3c9561723c5d0db26e671aa7370189f83e9aea@group.calendar.google.com'; // Your calendar ID
 
 // In Firebase Console (where you see "Hello, [Name] Welcome to your Firebase project!"):
 // Click the gear icon in the left sidebar > "Project settings".
@@ -45,7 +39,6 @@ function App() {
     danceStyles: [],
   });
   const isInitialLoadRef = useRef(true);
-  const CALENDAR_ID = "en.usa#holiday@group.v.calendar.google.com";
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -189,8 +182,7 @@ function App() {
   // For playing w color: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/named-color
   return (
     <div style={{ padding: "20px", backgroundColor: "#02008f", minHeight: "100vh", overflow: "hidden" }}>
-      <Header onSubmitEvent={handleSubmitEvent} myCalendarId={MY_CALENDAR_ID} /> {/* Pass the calendar ID */}
-
+      <Header onSubmitEvent={handleSubmitEvent} danceCalendarId={DANCE_CALENDAR_ID} />
       <Filter selectedFilters={selectedFilters} onFilterChange={setSelectedFilters} />
 
       <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "8px", marginBottom: "20px", overflow: view === "listWeek" ? "auto" : "hidden", maxHeight: view === "listWeek" ? "none" : "auto", height: view === "listWeek" ? "auto" : "auto" }}>
@@ -201,7 +193,7 @@ function App() {
           </div>
         )}
         <div style={{ width: "100%", overflow: view === "listWeek" ? "auto" : "hidden" }}>
-          <Calendar events={filteredEvents} view={view} onViewChange={handleViewChange} myCalendarId={MY_CALENDAR_ID} />
+          <Calendar events={filteredEvents} view={view} onViewChange={handleViewChange} danceCalendarId={DANCE_CALENDAR_ID} />
         </div>
       </div>
 

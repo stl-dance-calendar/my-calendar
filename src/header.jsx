@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import danceLogo from "../calendar_logo.png";
 import AboutContent from "./aboutContent";
 
-const Header = ({ onSubmitEvent, myCalendarId }) => {
+const Header = ({ onSubmitEvent, danceCalendarId }) => {
   const [showAboutModal, setShowAboutModal] = useState(false);
   const handleAddToCalendar = () => {
-    if (myCalendarId) {
-      window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(myCalendarId)}`, '_blank');
+    if (danceCalendarId) {
+      window.open(`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(danceCalendarId)}`, '_blank');
     }
   };
 

@@ -7,6 +7,13 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
+// Calendar IDs (used by App.jsx and Header)
+export const CALENDAR_IDS = [
+  'en.usa#holiday@group.v.calendar.google.com', // US holidays
+  'dee75596aea9533d01629c0cfc3c9561723c5d0db26e671aa7370189f83e9aea@group.calendar.google.com' // Main calendar
+];
+export const DANCE_CALENDAR_ID = 'dee75596aea9533d01629c0cfc3c9561723c5d0db26e671aa7370189f83e9aea@group.calendar.google.com';
+
 // Firebase config (same as App.jsx)
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,7 +27,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const Calendar = ({ events, view = "dayGridWeek", onViewChange, myCalendarId }) => {
+const Calendar = ({ events, view = "dayGridWeek", onViewChange, danceCalendarId }) => {
   const calendarRef = useRef(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [clickedEventId, setClickedEventId] = useState(null);
@@ -73,11 +80,11 @@ const Calendar = ({ events, view = "dayGridWeek", onViewChange, myCalendarId }) 
         organizer_data: organizerData,
         _noData: false,
       };
-      console.log('Combined event data:', combined); // DEBUG
+      // console.log('Combined event data:', combined); // DEBUG
       setSelectedEvent(combined);
     } else {
       // Only Google Calendar data available
-      console.log('Only Google Calendar data:', googleCalendarData); // DEBUG
+      // console.log('Only Google Calendar data:', googleCalendarData); // DEBUG
       setSelectedEvent({
         ...googleCalendarData,
         _noData: true,
