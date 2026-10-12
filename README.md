@@ -1,6 +1,10 @@
 # STL Afro-Latin Dance Calendar
 A React + Vite app using FullCalendar to display events from public Google Calendars.
 
+## Pages (With Localhost as Example)
+- Home:
+- Submit an event: http://localhost:5173/submit-an-event
+
 ## Features
 
 - Display a Google Calendar in a calendar grid.
@@ -12,6 +16,7 @@ A React + Vite app using FullCalendar to display events from public Google Calen
 - Node.js (v18+ recommended)
 - npm or yarn
 - Google Cloud account to get a **Google Calendar API key**  
+- Firebase CLI (npm.cmd install -g firebase-tools)
 
 ## Setup
 
@@ -22,7 +27,7 @@ git clone https://github.com/your-username/my-calendar.git
 cd my-calendar
 ```
 
-2. [One-Time Only] Install dependencies
+2. [Whenever these aren't present] Install dependencies
 ` npm install `
 ` npm install firebase `
 ` npm install @fullcalendar/list `
@@ -33,7 +38,6 @@ cd my-calendar
 ```bash
 git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
-```
 
 4. Create API Key from Google then create .env file in project root
   - (yes annoyingly will require getting a trial attached to a payment in case you run over usage)
@@ -49,6 +53,11 @@ Click "Save".
 
 5. Run the app 
 ` npm run dev `
+
+Note: If you experience an error, 
+- `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+- restart terminal
+- ` npm run dev `
 
 6. View the app running on http://localhost:5173/
   - You should also get a popup to confirm app is running and what port the app is running on. If you don't see a popup, check the terminal in the IDE).

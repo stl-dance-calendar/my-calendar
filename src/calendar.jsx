@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
-// Calendar IDs (used by App.jsx and Header)
+// Calendar IDs (used by App.jsx and Header.jsx)
 export const CALENDAR_IDS = [
   'en.usa#holiday@group.v.calendar.google.com', // US holidays
   'dee75596aea9533d01629c0cfc3c9561723c5d0db26e671aa7370189f83e9aea@group.calendar.google.com' // Main calendar

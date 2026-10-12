@@ -1,10 +1,12 @@
 Ordered Chronologically
 
 feature/submission
-- create Submit an Event form at localhost:5173/submit-an-event
-- display submissions on localhost:5173/temp-admin-submissions
-- clicking 'submit' gives us completed message
+- create Submit an Event form at localhost:5173/submit-an-event (done)
 - clicking 'submit' stores all in Firebase under new 'submissions'
+- display submissions on localhost:5173/temp-admin-submissions
+- add security (create-only access for eventSubmissions, read/update/delete blocked for everyone, and whitelisted allowed fields) - for now
+- status pending_review/reviewed/declined
+- clicking 'submit' gives us completed message
 - clicking 'submit a request' leads us here
 - clicking logo takes us back to home
 

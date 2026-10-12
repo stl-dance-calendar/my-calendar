@@ -4,7 +4,7 @@
 - Responsive calendar display (desktop: week grid, mobile: list view)
 - Google Calendar integration
 - Firebase Firestore backend
-- Event filtering by event_type and dance_style
+- Event filtering by event_type and dance_styles
 - About modal with community info
 - "Last updated" timestamp
 - Logo with responsive sizing
@@ -15,7 +15,7 @@
 ## In Progress 🔄
 
 ### Color Coding
-- [ ] Add color coding by dance_style (e.g., Salsa = red, Bachata = blue, Zouk = green, Kizomba = orange, Other = gray)
+- [ ] Add color coding by dance_styles (e.g., Salsa = red, Bachata = blue, Zouk = green, Kizomba = orange, Other = gray)
 - [ ] Update event display to show color indicators
 - [ ] Add legend showing color mappings
 - [ ] Ensure colors are accessible (sufficient contrast)
@@ -41,7 +41,7 @@
   - Only accessible to team members
   - Pre-fill form with Google Calendar event data
   - Auto-populate title, date, time, duration
-  - Manual input for: event_type, dance_style
+  - Manual input for: event_type, dance_styles
   - One-click Firebase save
 
 ### Alternative (Not Pursuing)

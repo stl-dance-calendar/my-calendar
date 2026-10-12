@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import danceLogo from "../calendar_logo.png";
 import { getApp, getApps, initializeApp } from "firebase/app";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import { addDoc, collection, getDocs, getFirestore, serverTimestamp } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,6 +16,7 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const initialForm = {
   eventName: "",
   organizerFirstName: "",
@@ -243,6 +245,24 @@ const buildAdvancedSummary = (weekdayCodes, ordinalValues) => {
   return `Every ${formatListWithAnd(ordinalLabels)} ${formatListWithAnd(weekdayLabels)}`;
 };
 
+const uploadSubmissionFile = async (file, fileType) => {
+  if (!file) return null;
+  const fileExt = (file.name.split(".").pop() || "file").toLowerCase();
+  const uniqueName = `${crypto.randomUUID()}.${fileExt}`;
+  const fileRef = ref(storage, `event-submissions/${fileType}/${uniqueName}`);
+  await uploadBytes(fileRef, file);
+  const downloadUrl = await getDownloadURL(fileRef);
+
+  return {
+    name: file.name,
+    type: file.type || "",
+    size: file.size,
+    path: fileRef.fullPath,
+    downloadUrl,
+    uploadedAt: new Date().toISOString(),
+  };
+};
+
 export default function SubmitEventPage() {
   const [formData, setFormData] = useState(initialForm);
   const [datePickerValue, setDatePickerValue] = useState("");
@@ -278,6 +298,8 @@ export default function SubmitEventPage() {
   const [selectedDanceStyles, setSelectedDanceStyles] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventSuggestions, setEventSuggestions] = useState([]);
   const [selectedEventRecord, setSelectedEventRecord] = useState(null);
   const [isLoadingEventNames, setIsLoadingEventNames] = useState(true);
@@ -523,8 +545,11 @@ export default function SubmitEventPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setSubmitted(false);
+    setSubmitError("");
 
     const nextErrors = {
       eventName: "",
@@ -576,14 +601,8 @@ export default function SubmitEventPage() {
     if (selectedEventTypes.length === 0) nextErrors.eventType = "Please select at least one event type.";
     if (selectedDanceStyles.length === 0) nextErrors.danceStyle = "Please select at least one dance style.";
 
-    if (!formData.officialEventLink.trim()) {
-      nextErrors.officialEventLink = "Official event link is required.";
-    } else if (!isValidHttpUrl(formData.officialEventLink)) {
+    if (formData.officialEventLink.trim() && !isValidHttpUrl(formData.officialEventLink)) {
       nextErrors.officialEventLink = "Official event link must start with http:// or https://";
-    }
-
-    if (!flyerFile) {
-      nextErrors.flyer = "Flyer is required.";
     }
 
     if (!formData.organizerFirstName.trim()) nextErrors.organizerFirstName = "First name is required.";
@@ -643,13 +662,40 @@ export default function SubmitEventPage() {
 
     const selectedOrganizer = organizers.find((org) => org.id === formData.organizerId);
     const organizerFullName = `${formData.organizerFirstName || ""} ${formData.organizerLastName || ""}`.trim();
-    console.log("Submit Event form (placeholder):", {
-      ...formData,
-      organizerName: selectedOrganizer?.name || organizerFullName,
-      flyerFileName: flyerFile?.name || "",
-      safetyPolicyFileName: safetyPolicyFile?.name || "",
-    });
-    setSubmitted(true);
+    const selectedRecurrencePreset = recurrencePresetOptions.find((option) => option.value === formData.recurrencePreset);
+
+    setIsSubmitting(true);
+    try {
+      const [uploadedFlyerFile, uploadedSafetyPolicyFile, uploadedContactSafetyPolicyFile] = await Promise.all([
+        uploadSubmissionFile(flyerFile, "flyer"),
+        uploadSubmissionFile(safetyPolicyFile, "event-safety-policy"),
+        uploadSubmissionFile(contactSafetyPolicyFile, "contact-safety-policy"),
+      ]);
+
+      const submissionPayload = {
+        ...formData,
+        organizerName: selectedOrganizer?.name || organizerFullName,
+        recurrencePresetLabel: selectedRecurrencePreset?.label || "",
+        recurrenceAdvancedSummary: advancedSummary || "",
+        selectedDanceStyles,
+        selectedEventTypes,
+        datePickerValue,
+        flyerFile: uploadedFlyerFile,
+        safetyPolicyFile: uploadedSafetyPolicyFile,
+        contactSafetyPolicyFile: uploadedContactSafetyPolicyFile,
+        submissionStatus: "pending_review",
+        submittedAt: serverTimestamp(),
+        sourcePage: "/submit-an-event",
+      };
+
+      await addDoc(collection(db, "eventSubmissions"), submissionPayload);
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Failed to submit event:", error);
+      setSubmitError("Something went wrong while submitting. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFlyerFileChange = (e) => {
@@ -1309,13 +1355,12 @@ export default function SubmitEventPage() {
 
           <div style={{ marginBottom: "12px" }}>
             <label htmlFor="officialEventLink" style={{ display: "block", fontWeight: 600, marginBottom: "4px" }}>
-              Official Event Link
+              Official Event Link (Optional)
             </label>
             <input
               id="officialEventLink"
               name="officialEventLink"
               type="text"
-              required
               placeholder="https://example.com/event"
               value={formData.officialEventLink}
               onChange={(e) => {
@@ -1343,7 +1388,7 @@ export default function SubmitEventPage() {
 
           <div style={{ marginBottom: "12px" }}>
             <label htmlFor="flyer" style={{ display: "block", fontWeight: 600, marginBottom: "4px" }}>
-              Flyer
+              Flyer (Optional)
             </label>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#666", fontStyle: "italic" }}>
               {hasPriorFlyer
@@ -1354,7 +1399,6 @@ export default function SubmitEventPage() {
               id="flyer"
               name="flyer"
               type="file"
-              required
               accept=".png,.jpg,.jpeg,.heic,.heif,.webp,image/png,image/jpeg,image/heic,image/heif,image/webp"
               onChange={handleFlyerFileChange}
               style={{ width: "100%" }}
@@ -1366,7 +1410,7 @@ export default function SubmitEventPage() {
 
           <div style={{ marginBottom: "12px" }}>
             <label htmlFor="safetyPolicyUrl" style={{ display: "block", fontWeight: 600, marginBottom: "4px" }}>
-              Safety Policy
+              Safety Policy (Highly Recommended)
             </label>
             <p style={{ margin: "0 0 6px", fontSize: "12px", color: "#666", fontStyle: "italic" }}>
               (ONLY ADD HERE IF UNIQUE FOR THIS EVENT AND NOT CONSISTENT FOR CONTACT)
@@ -1695,24 +1739,30 @@ export default function SubmitEventPage() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             style={{
               marginTop: "8px",
               padding: "10px 20px",
               fontSize: "16px",
-              backgroundColor: "#007bff",
+              backgroundColor: isSubmitting ? "#6c757d" : "#007bff",
               color: "white",
               border: "none",
               borderRadius: "5px",
-              cursor: "pointer",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
             }}
           >
-            Submit
+            {isSubmitting ? "Submitting..." : "Submit"}
           </button>
         </form>
 
         {submitted && (
           <p style={{ marginTop: "12px", color: "#2e7d32", fontWeight: 600 }}>
-            Form submitted for review. (placeholder behavior).
+            Form submitted for review.
+          </p>
+        )}
+        {submitError && (
+          <p style={{ marginTop: "12px", color: "#c62828", fontWeight: 600 }}>
+            {submitError}
           </p>
         )}
       </div>

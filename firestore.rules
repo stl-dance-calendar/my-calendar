@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /eventSubmissions/{submissionId} {
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          "eventName",
+          "organizerFirstName",
+          "organizerLastName",
+          "organizerId",
+          "organizerPhone",
+          "organizerInstagramHandle",
+          "organizerFacebookPage",
+          "officialEventLink",
+          "location",
+          "date",
+          "recurring",
+          "recurrencePreset",
+          "recurrenceRRule",
+          "recurrenceDetails",
+          "recurrenceAdvancedWeekdays",
+          "recurrenceAdvancedOrdinals",
+          "startTime",
+          "endTime",
+          "danceStyle",
+          "eventType",
+          "safetyPolicyUrl",
+          "contactSafetyPolicyCompanyName",
+          "contactSafetyPolicyUrl",
+          "description",
+          "organizerName",
+          "recurrencePresetLabel",
+          "recurrenceAdvancedSummary",
+          "selectedDanceStyles",
+          "selectedEventTypes",
+          "datePickerValue",
+          "flyerFile",
+          "safetyPolicyFile",
+          "contactSafetyPolicyFile",
+          "submissionStatus",
+          "submittedAt",
+          "sourcePage"
+        ])
+        && request.resource.data.submissionStatus == "pending_review"
+        && request.resource.data.eventName is string
+        && request.resource.data.organizerFirstName is string
+        && request.resource.data.organizerLastName is string
+        && request.resource.data.organizerPhone is string
+        && request.resource.data.officialEventLink is string
+        && request.resource.data.location is string
+        && request.resource.data.date is string
+        && request.resource.data.recurring is string
+        && request.resource.data.startTime is string
+        && request.resource.data.endTime is string
+        && request.resource.data.danceStyle is string
+        && request.resource.data.eventType is string
+        && request.resource.data.description is string
+        && request.resource.data.sourcePage is string;
+
+      allow read, update, delete: if false;
+    }
+  }
+}
