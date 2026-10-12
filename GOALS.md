@@ -1,5 +1,7 @@
 # STL Afro-Latin Dance Calendar - Project Goals
 
+see docs/work-to-complete.md. I need to consolidate these files, this one's outdated as of 10/12.
+
 ## Completed Features
 - Responsive calendar display (desktop: week grid, mobile: list view)
 - Google Calendar integration
