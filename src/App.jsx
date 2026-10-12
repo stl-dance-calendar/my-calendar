@@ -143,8 +143,7 @@ function App() {
   }, []);
 
   const handleSubmitEvent = () => {
-    // Add logic for submitting an event
-    alert("Submit Event clicked!");
+    window.location.href = '/submit-an-event';
   };
 
   const handleViewChange = (newView) => {
